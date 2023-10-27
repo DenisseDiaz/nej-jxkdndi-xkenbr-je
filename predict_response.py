@@ -33,7 +33,7 @@ def preprocess_user_input(user_input):
     bag=[]
     bag_of_words = []
    
-    # Encondificación de datos de entrada. 
+    # Encondificación de datos de entrada.  
     for word in words:            
         if word in input_word_token_2:              
             bag_of_words.append(1)

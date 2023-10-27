@@ -1,1 +1,1 @@
-# PRO-C122-Código-de-referencia
+# PRO-C122-Plantilla-del-código-para-el-alumno

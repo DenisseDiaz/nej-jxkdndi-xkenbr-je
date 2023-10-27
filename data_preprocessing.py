@@ -1,8 +1,5 @@
 # Biblioteca de procesamiento de datos.
 import nltk
-nltk.download('punkt')
-nltk.download('wordnet')
-
 
 from nltk.stem import PorterStemmer
 stemmer = PorterStemmer()
@@ -63,7 +60,7 @@ def bag_of_words_encoding(stem_words, pattern_word_tags_list):
     for word_tags in pattern_word_tags_list:
         # ejemplo: etiquetas_palabras = (['hola', 'amigo'], 'saludo').
 
-        pattern_words = word_tags[0] # ['hola', 'amigo'].
+        pattern_words = word_tags[0] # ['hola', 'amigo']
         stem_pattern_words = get_stem_words(pattern_words, ignore_words)
         bag_of_words = []
 

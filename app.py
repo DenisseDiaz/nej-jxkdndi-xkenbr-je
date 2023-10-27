@@ -37,7 +37,7 @@ def predict_emotion():
                             }  
                    }
 
-        # Enviar respuesta.         
+        # Enviar respuesta.        
         return jsonify(response)
 
 
@@ -51,27 +51,22 @@ def save_entry():
 
     save_text = save_text.replace("\n", " ")
 
-    # Entrada CSV. 
+    # Entrada CSV.
     entry = f'"{date}","{save_text}","{emotion}"\n'  
 
     with open("./static/assets/data_files/data_entry.csv", "a") as f:
         f.write(entry)
     return jsonify("Success")
 
+#Escribir la API aquí.
 
-@app.route("/bot-response", methods=["POST"])
-def bot():
-    # Obtener la entrada del usuario.
-    input_text = request.json.get("user_bot_input_text")
+
+    # Obtener la entrada del usuario aquí.
+    
    
     # Llamar al método para obtener la respuesta del bot.
-    bot_res = bot_response(input_text)
+    
 
-    response = {
-            "bot_response": bot_res
-        }
-
-    return jsonify(response)     
-     
+    
 if __name__ == '__main__':
     app.run(debug=True)
