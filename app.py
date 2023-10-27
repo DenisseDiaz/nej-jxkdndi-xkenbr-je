@@ -1,60 +1,77 @@
-from flask import Flask , render_template , request , jsonify
-import prediction
-
+from flask import Flask, render_template, url_for, request, jsonify
+from model_prediction import * 
+from predict_response import *
+ 
 app = Flask(__name__)
 
+predicted_emotion=""
+predicted_emotion_img_url=""
+
 @app.route('/')
-def home():
-    return render_template('index.html')
-
-# API escuchando a solicitudes POST y prediciendo sentimientos
-@app.route('/predict' , methods = ['POST'])
-def predict():
-
-    response = ""
-    review = request.json.get('customer_review')
-    if not review:
-        response = {'status' : 'error',
-                    'message' : 'Reseña vacía'}
+def index():
+    entries = show_entry()
+    return render_template("index.html", entries=entries)
+ 
+@app.route('/predict-emotion', methods=["POST"])
+def predict_emotion():
     
-    else:
-
-        # Llamando al método predict del módulo prediction.py
-        sentiment , path = prediction.predict(review)
-        response = {'status' : 'success',
-                    'message' : 'Listo',
-                    'sentiment' : sentiment,
-                    'path' : path}
-
-    return jsonify(response)
-
-
-# Creando una API para guardar la reseña cuando el usuario haga clic en el botón Guardar
-@app.route('/' , methods = [''])
-def save():
-
-    # Extrayendo fecha, nombre del producto, reseña, sentimientos asociados desde los datos JSON
-    date = request.json.get('')
-    product = request.json.get('')
-    review = request.json.get('')
-    sentiment = request.json.get('')
-
-    # Creando una variable final separada por comas
-    data_entry = date + "," + product + "," + review + "," + sentiment
-
-    # Abrir el archivo en modo "append"
-    input_text = request.json.get("text")
+    # Obtener el texto de entrada del requerimiento POST.
+    input_text = request.json.get("text")  
+    
     if not input_text:
-        return jsonify({
-        "status":"error",
-        "message":"Por favor introduce algun texto"
-})
-    # Registrar los datos en el archivo
+        # Respuesta a enviar si input_text no está definido.
+        response = {
+                    "status": "error",
+                    "message": "¡Por favor, ingresa algún texto para predecir la emoción!"
+                  }
+        return jsonify(response)
+    else:  
+        predicted_emotion, predicted_emotion_img_url = predict(input_text)
+        
+        # Respuesta a enviar si input_text no esta indefinido.
+        response = {
+                    "status": "success",
+                    "data": {
+                            "predicted_emotion": predicted_emotion,
+                            "predicted_emotion_img_url": predicted_emotion_img_url
+                            }  
+                   }
 
-    # Regresar un mensaje de éxito
-    return jsonify({'status' : 'success' , 
-                    'message' : 'Datos registrados'})
+        # Enviar respuesta.         
+        return jsonify(response)
 
 
-if __name__  ==  "__main__":
-    app.run(debug = True)
+@app.route("/save-entry", methods=["POST"])
+def save_entry():
+
+    # Obtener datos, predecir emoción y el texto ingresado por el usuario para guardar una entrada.
+    date = request.json.get("date")           
+    emotion = request.json.get("emotion")
+    save_text = request.json.get("text")
+
+    save_text = save_text.replace("\n", " ")
+
+    # Entrada CSV. 
+    entry = f'"{date}","{save_text}","{emotion}"\n'  
+
+    with open("./static/assets/data_files/data_entry.csv", "a") as f:
+        f.write(entry)
+    return jsonify("Success")
+
+
+@app.route("/bot-response", methods=["POST"])
+def bot():
+    # Obtener la entrada del usuario.
+    input_text = request.json.get("user_bot_input_text")
+   
+    # Llamar al método para obtener la respuesta del bot.
+    bot_res = bot_response(input_text)
+
+    response = {
+            "bot_response": bot_res
+        }
+
+    return jsonify(response)     
+     
+if __name__ == '__main__':
+    app.run(debug=True)

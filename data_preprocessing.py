@@ -1,108 +1,79 @@
-#  Biblioteca de preprocesamiento de datos de texto
+# Biblioteca de procesamiento de datos.
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
 
-# Para las palabras raíz
-from nltk.stem import PorterStemmer
 
-# Crear una instancia para la clase PorterStemmer
+from nltk.stem import PorterStemmer
 stemmer = PorterStemmer()
 
-# Importar la biblioteca json
 import json
 import pickle
+
 import numpy as np
+import random
 
-words=[] # Lista de raíces de palabras únicas en los datos
-classes = [] # Lista de etiquetas únicas en los datos
-pattern_word_tags_list = [] # Lista de pares de la forma (['palabras', 'de', 'las', 'oraciones'], 'etiquetas')
 
-# Palabras que se ignorarán al crear el conjunto de datos
+words=[] #lista de palabras raíces únicas en los datos.
+classes = [] #lista de etiquetas únicas en los datos.
+pattern_word_tags_list = [] #lista del par de (['palabras', 'de', 'la', 'oración'], 'etiquetas').
+
 ignore_words = ['?', '!',',','.', "'s", "'m"]
 
-# Abrir el archivo JSON y cargando sus datos
-train_data_file = open('intents.json')
-data = json.load(train_data_file)
-train_data_file.close()
+train_data_file = open('./static/assets/chatbot_corpus/intents.json').read()
+intents = json.loads(train_data_file)
 
-# Creando una función para las palabras raíz
 def get_stem_words(words, ignore_words):
     stem_words = []
     for word in words:
         if word not in ignore_words:
-            w=stemmer.stem(word.lower())
+            w = stemmer.stem(word.lower())
             stem_words.append(w)
     return stem_words
-
-'''
-Lista ordenada de palabras raíz para nuestro conjunto de datos:
-
-['all', 'ani', 'anyon', 'are', 'awesom', 'be', 'best', 'bluetooth', 'bye', 'camera', 'can', 'chat', 
-'cool', 'could', 'digit', 'do', 'for', 'game', 'goodby', 'have', 'headphon', 'hello', 'help', 'hey', 
-'hi', 'hola', 'how', 'is', 'later', 'latest', 'me', 'most', 'next', 'nice', 'phone', 'pleas', 'popular', 
-'product', 'provid', 'see', 'sell', 'show', 'smartphon', 'tell', 'thank', 'that', 'the', 'there', 
-'till', 'time', 'to', 'trend', 'video', 'what', 'which', 'you', 'your']
-
-'''
-
-
-# Creando una función para hacer el corpus
+ 
 def create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words):
 
-    for intent in data['intents']:
+    for intent in intents['intents']:
 
-        # Agregar todos los patrones y las etiquetas a una lista
-        for pattern in intent['patterns']:  
-
-            # Tokenizar el patrón
-            pattern_words = nltk.word_tokenize(pattern)
-
-            # Agregar las palabras tokenizadas a la lista "words"
-            words.extend(pattern_words)  
-            # Agregar la lista de palabras tokenizadas junto con la etiqueta a la lista pattern_word_tags_list
-            pattern_word_tags_list.appen((pattern_words,intent['tag'])
-            
-        # Agregar todas las etiquetas a la lista classes
+        # Agregar todos los patrones y etiquetas en una lista.
+        for pattern in intent['patterns']:            
+            pattern_word = nltk.word_tokenize(pattern)            
+            words.extend(pattern_word)                        
+            pattern_word_tags_list.append((pattern_word, intent['tag']))
+              
+    
+        # Agregar todas las etiquetas en la lista clases.
         if intent['tag'] not in classes:
             classes.append(intent['tag'])
-
             
     stem_words = get_stem_words(words, ignore_words) 
-
-    # Remover palabras duplicadas de stem_words
     stem_words = sorted(list(set(stem_words)))
-    # Ordenar las listas stem_words y classes
-    classes=sorted(list(set(classes)))
-    
-    # Imprimir stem_words
-    print('Lista stem_words: ' , stem_words)
+    classes = sorted(list(set(classes)))
 
     return stem_words, classes, pattern_word_tags_list
 
 
-# Conjunto de datos de entrenamiento: 
-# Texto de entrada ----> como bolsa de palabras
-# Etiquetas -----------> como etiqueta
+# Conjunto de datos de entrenamiento.
+# Texto de entrada----> como una bolsa de palabras.
+# Etiquetas-----------> como una etiqueta.
 
 def bag_of_words_encoding(stem_words, pattern_word_tags_list):
     
     bag = []
     for word_tags in pattern_word_tags_list:
-        # Ejemplo: word_tags = (['hi', 'there'], 'greetings']
+        # ejemplo: etiquetas_palabras = (['hola', 'amigo'], 'saludo').
 
-        pattern_words = word_tags[0] # ['Hi' , 'There]
+        pattern_words = word_tags[0] # ['hola', 'amigo'].
+        stem_pattern_words = get_stem_words(pattern_words, ignore_words)
         bag_of_words = []
 
-        # Patrones de palabras para stemming antes de crear la bolsa de palabras
-        stemmed_pattern_word = get_stem_words(pattern_words, ignore_words)
-       
-        for word in stem_words:
-            if word in stemmed_patteren_word:
+        # Encondificación del texto de entrada. 
+        for word in stem_words:            
+            if word in stem_pattern_words:              
                 bag_of_words.append(1)
             else:
                 bag_of_words.append(0)
-            
+    
         bag.append(bag_of_words)
     
     return np.array(bag)
@@ -113,16 +84,16 @@ def class_label_encoding(classes, pattern_word_tags_list):
 
     for word_tags in pattern_word_tags_list:
 
-        # Comenzar con la lista de ceros
+        # Iniciar con una lista de ceros 0.
         labels_encoding = list([0]*len(classes))  
 
-        # Ejemplo: word_tags = (['hi', 'there'], 'greetings']
+        # ejemplo: etiquetas_palabras = (['hola', 'amigo'], 'saludo').
 
-        tag = word_tags[1]   # 'greetings'
+        tag = word_tags[1]   # 'saludo'
 
         tag_index = classes.index(tag)
 
-        # Códificación de etiquetas
+        # Encondificación de etiquetas.
         labels_encoding[tag_index] = 1
 
         labels.append(labels_encoding)
@@ -133,18 +104,15 @@ def preprocess_train_data():
   
     stem_words, tag_classes, word_tags_list = create_bot_corpus(words, classes, pattern_word_tags_list, ignore_words)
     
-    # Convertir las palabras raíz y las clases a formato de archivo pickel de Python
-    
+    # Convertir las palabras clave o raíz y la lista clases en un formato de archivo pickel de Python.
+    pickle.dump(stem_words, open('words.pkl','wb'))
+    pickle.dump(tag_classes, open('classes.pkl','wb'))
 
     train_x = bag_of_words_encoding(stem_words, word_tags_list)
     train_y = class_label_encoding(tag_classes, word_tags_list)
     
     return train_x, train_y
 
-bow_data  , label_data = preprocess_train_data()
-
-# Después de completar el código, remueve el comentario de las declaraciones de impresión
-# print("Primera codificación de la bolsa de palabras: " , bow_data[0])
-# print("Primera codificación de las etiquetas: " , label_data[0])
+# preprocess_train_data()
 
 
