@@ -1,0 +1,14 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
+import time
+import pandas as pd
+browser=webdriver.Chrome()
+browser.get(START_URL)
+time.sleep(10)
+scarpe_data=[]  
+def scrape():
+soup=BeautifulSoup(browser.page_souce,"httml.parcer")
+bright_stars_table=soup.find("table"attrs="class")
+
+  
