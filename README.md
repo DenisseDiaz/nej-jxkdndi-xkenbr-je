@@ -1,7 +1,7 @@
-# PRO_C118_PP_V1
-IMPLEMENTACIÓN DE APLICACIÓN WEB: Diario digital  
-Python. Flask. jQuery.  
+# PRO_C119_PP_V1
+FILOSOFÍA DE UN CHATBOT  
+Python. NLTK.  
   
-Análisis de sentimiento  
+Preprocesamiento de datos.  
   
-### Texto en inglés: PRO-C118-Project-Boilerplate
+### Texto en inglés: PRO-C119-Project-Boilerplate
